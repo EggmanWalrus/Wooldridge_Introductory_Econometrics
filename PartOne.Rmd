@@ -1,0 +1,159 @@
+---
+title: "Part One"
+author: "Yanwen Wang"
+date: "9/29/2021"
+output: 
+  html_document:
+    toc: true 
+    number_sections: true
+    theme: united
+    highlight: tango
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import Libraries
+
+```{r, message=FALSE, warning=FALSE}
+library(wooldridge)
+library(tidyverse)
+```
+
+
+# Chapter One
+## Exercises
+### C1
+
+```{r}
+data(wage1)
+head(wage1)
+```
+
+```{r}
+#1
+summary(wage1$educ)
+
+#2
+mean(wage1$wage)
+
+#3
+#CPI is 56.93 in 1976 and 218.08 in 2010.
+
+#4
+mean(218.08 / 56.93 * wage1$wage)
+
+#5
+table(wage1$female)
+```
+
+### C2
+
+```{r}
+data("bwght")
+head(bwght)
+```
+
+```{r}
+#1
+table(bwght$male)
+filter(bwght, (cigs > 0) & (male == 0)) %>% nrow()
+
+#2
+mean(bwght$cigs)
+
+#3
+filter(bwght, (cigs > 0) & (male == 0))$cigs %>% mean()
+
+#4
+mean(bwght$fatheduc, na.rm = TRUE)
+
+#5
+mean(bwght$faminc * 1000)
+sd(bwght$faminc * 1000)
+```
+
+### C3
+
+```{r}
+data("meap01")
+head(meap01)
+```
+
+```{r}
+#1
+range(meap01$math4)
+
+#2
+nrow(filter(meap01, math4 == 100))
+nrow(filter(meap01, math4 == 100)) / nrow(meap01)
+
+#3
+nrow(filter(meap01, math4 == 50))
+
+#4
+mean(meap01$math4)
+mean(meap01$read4)
+
+#5
+cor(meap01$math4, meap01$read4)
+
+#6
+mean(meap01$exppp)
+sd(meap01$exppp)
+
+#7
+(6000 - 5500) / 5500
+log(6000) - log(5000)
+```
+
+### C4
+
+```{r}
+data("jtrain2")
+head(jtrain2)
+```
+
+```{r}
+#1
+length(jtrain2$train[jtrain2$train==1]) / length(jtrain2$train)
+
+#2
+mean(jtrain2$re78[jtrain2$train==1])
+mean(jtrain2$re78[jtrain2$train==0])
+
+#3
+jtrain2 %>% filter(train == 1, unem78 == 1) %>% nrow() / jtrain2 %>% filter(train == 1) %>% nrow()
+jtrain2 %>% filter(train == 0, unem78 == 1) %>% nrow() / jtrain2 %>% filter(train == 0) %>% nrow()
+```
+
+### C5
+
+```{r}
+data("fertil2")
+head(fertil2)
+```
+
+```{r}
+#1
+range(fertil2$children)
+
+#2
+nrow(fertil2[fertil2$electric == 1, ]) / nrow(fertil2)
+
+#3
+mean(fertil2$children[fertil2$electric == 1], na.rm = TRUE)
+mean(fertil2$children[fertil2$electric == 0], na.rm = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
