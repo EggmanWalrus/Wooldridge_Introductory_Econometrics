@@ -8,7 +8,7 @@ output:
     number_sections: true
     theme: united
     highlight: tango
-    code_folding: hide
+    code_folding: show
 ---
 
 ```{r setup, include=FALSE}
@@ -20,19 +20,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, message=FALSE, warning=FALSE}
 library(wooldridge)
 library(tidyverse)
+library(jtools)
+
+theme_set(theme_classic())
 ```
 
 
-# Chapter One
+# Chapter 1
 ## Exercises
 ### C1
 
 ```{r}
 data(wage1)
-head(wage1)
-```
 
-```{r}
 #1
 summary(wage1$educ)
 
@@ -53,10 +53,7 @@ table(wage1$female)
 
 ```{r}
 data("bwght")
-head(bwght)
-```
 
-```{r}
 #1
 table(bwght$male)
 filter(bwght, (cigs > 0) & (male == 0)) %>% nrow()
@@ -79,10 +76,7 @@ sd(bwght$faminc * 1000)
 
 ```{r}
 data("meap01")
-head(meap01)
-```
 
-```{r}
 #1
 range(meap01$math4)
 
@@ -113,10 +107,7 @@ log(6000) - log(5000)
 
 ```{r}
 data("jtrain2")
-head(jtrain2)
-```
 
-```{r}
 #1
 length(jtrain2$train[jtrain2$train==1]) / length(jtrain2$train)
 
@@ -133,10 +124,7 @@ jtrain2 %>% filter(train == 0, unem78 == 1) %>% nrow() / jtrain2 %>% filter(trai
 
 ```{r}
 data("fertil2")
-head(fertil2)
-```
 
-```{r}
 #1
 range(fertil2$children)
 
@@ -146,6 +134,169 @@ nrow(fertil2[fertil2$electric == 1, ]) / nrow(fertil2)
 #3
 mean(fertil2$children[fertil2$electric == 1], na.rm = TRUE)
 mean(fertil2$children[fertil2$electric == 0], na.rm = TRUE)
+```
+
+# Chapter 2: The Simple Regression Model
+## Exampeles
+### 2.3
+
+```{r, message=FALSE, warning=FALSE}
+data("ceosal1")
+
+summ(lm(salary ~ roe, data = ceosal1))
+
+ggplot(ceosal1, aes(roe, salary)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+````
+
+### 2.4
+
+```{r, message=FALSE, warning=FALSE}
+summ(lm(log(wage) ~ educ, data = wage1))
+
+ggplot(wage1, aes(educ, log(wage))) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+### 2.11
+
+```{r}
+summ(lm(log(salary) ~ log(sales), data = ceosal1))
+
+ggplot(ceosal1, aes(log(sales), log(salary))) + 
+  geom_point() +
+  geom_smooth(method = "lm ")
+```
+
+## Exercises
+### C1
+
+```{r}
+data("k401k")
+head(k401k)
+
+#1
+mean(k401k$prate)
+mean(k401k$mrate)
+
+#2
+summ(lm(prate ~ mrate, data = k401k))
+```
+
+### C2
+
+```{r}
+data("ceosal2")
+
+#1
+mean(ceosal2$salary)
+mean(ceosal2$ceoten)
+
+#2
+length(ceosal2$ceoten[ceosal2$ceoten == 0])
+max(ceosal2$ceoten)
+
+#3
+summ(lm(log(salary) ~ ceoten, data = ceosal2))
+```
+
+### C3
+
+```{r}
+data("sleep75")
+
+#1
+summ(lm(sleep ~ totwrk, data = sleep75))
+
+#2
+lm(sleep ~ totwrk, data = sleep75)$coefficient[2] * 2
+```
+
+### C4
+
+```{r}
+data("wage2")
+
+#1
+mean(wage2$wage)
+mean(wage2$IQ)
+
+#2
+summ(lm(wage ~ log(IQ), data = wage2))
+lm(wage ~ log(IQ), data = wage2)$coefficients[2] * log(15)
+
+#3
+summ(lm(log(wage) ~ log(IQ), data = wage2))
+lm(log(wage) ~ log(IQ), data = wage2)$coefficients[2] * log(15)
+```
+
+### C5
+
+```{r}
+data("rdchem")
+
+#1
+# log(sales) = beta0 + beta1 * log(rd) + u
+
+#2
+summ(lm(log(sales) ~ log(rd), data = rdchem))
+```
+
+### C6
+
+```{r}
+data("meap93")
+
+#1
+# Diminishing effect
+
+#2
+summ(lm(log(math10) ~ log(expend), data = meap93))
+```
+
+### C7
+
+```{r}
+data("charity")
+
+#1
+mean(charity$gift)
+length(charity$gift[charity$gift == 0]) / length(charity$gift) * 100
+
+#2
+mean(charity$mailsyear)
+range(charity$mailsyear)
+
+#3
+summ(lm(gift ~ mailsyear, data = charity))
+```
+
+### C8
+
+```{r}
+#1
+X <- runif(10000, 0, 10)
+mean(X)
+sd(X)
+
+#2
+u <- rnorm(10000, 0, 6)
+mean(u)
+sd(u)
+
+#3
+Y <- 1 + 2 * X + u
+summ(lm(Y ~ X))
+
+#4
+round(sum(lm(Y ~ X)$residuals), 3)
+round(sum(X * lm(Y ~ X)$residuals), 3)
+
+#5
+round(sum(u), 3)
+round(sum(X * u), 3)
 ```
 
 
