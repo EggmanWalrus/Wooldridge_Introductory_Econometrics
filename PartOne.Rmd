@@ -17,20 +17,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Import Libraries
 
-```{r, message=FALSE, warning=FALSE}
+```{r library and settings, message=FALSE, warning=FALSE}
 library(wooldridge)
 library(tidyverse)
+library(scatterplot3d)
 library(jtools)
 
+#Set ggplot graph theme
 theme_set(theme_classic())
+#Set digits number of regression outputs
+set_summ_defaults(digits = 3)
 ```
 
 
-# Chapter 1
+# Chapter 1: The Nature of Econometrics Data
 ## Exercises
 ### C1
 
-```{r}
+```{r 1.C1}
 data(wage1)
 
 #1
@@ -51,7 +55,7 @@ table(wage1$female)
 
 ### C2
 
-```{r}
+```{r 1.C2}
 data("bwght")
 
 #1
@@ -74,7 +78,7 @@ sd(bwght$faminc * 1000)
 
 ### C3
 
-```{r}
+```{r 1.C3}
 data("meap01")
 
 #1
@@ -105,7 +109,7 @@ log(6000) - log(5000)
 
 ### C4
 
-```{r}
+```{r 1.C4}
 data("jtrain2")
 
 #1
@@ -122,7 +126,7 @@ jtrain2 %>% filter(train == 0, unem78 == 1) %>% nrow() / jtrain2 %>% filter(trai
 
 ### C5
 
-```{r}
+```{r 1.C5}
 data("fertil2")
 
 #1
@@ -140,7 +144,7 @@ mean(fertil2$children[fertil2$electric == 0], na.rm = TRUE)
 ## Exampeles
 ### 2.3
 
-```{r, message=FALSE, warning=FALSE}
+```{r 2.E2.3, message=FALSE, warning=FALSE}
 data("ceosal1")
 
 summ(lm(salary ~ roe, data = ceosal1))
@@ -152,7 +156,7 @@ ggplot(ceosal1, aes(roe, salary)) +
 
 ### 2.4
 
-```{r, message=FALSE, warning=FALSE}
+```{r 2.E2.4, message=FALSE, warning=FALSE}
 summ(lm(log(wage) ~ educ, data = wage1))
 
 ggplot(wage1, aes(educ, log(wage))) + 
@@ -162,7 +166,7 @@ ggplot(wage1, aes(educ, log(wage))) +
 
 ### 2.11
 
-```{r}
+```{r 2.E2.11}
 summ(lm(log(salary) ~ log(sales), data = ceosal1))
 
 ggplot(ceosal1, aes(log(sales), log(salary))) + 
@@ -173,7 +177,7 @@ ggplot(ceosal1, aes(log(sales), log(salary))) +
 ## Exercises
 ### C1
 
-```{r}
+```{r 2.C1}
 data("k401k")
 head(k401k)
 
@@ -187,7 +191,7 @@ summ(lm(prate ~ mrate, data = k401k))
 
 ### C2
 
-```{r}
+```{r 2.C2}
 data("ceosal2")
 
 #1
@@ -204,7 +208,7 @@ summ(lm(log(salary) ~ ceoten, data = ceosal2))
 
 ### C3
 
-```{r}
+```{r 2.C3}
 data("sleep75")
 
 #1
@@ -216,7 +220,7 @@ lm(sleep ~ totwrk, data = sleep75)$coefficient[2] * 2
 
 ### C4
 
-```{r}
+```{r 2.C4}
 data("wage2")
 
 #1
@@ -234,7 +238,7 @@ lm(log(wage) ~ log(IQ), data = wage2)$coefficients[2] * log(15)
 
 ### C5
 
-```{r}
+```{r 2.C5}
 data("rdchem")
 
 #1
@@ -246,7 +250,7 @@ summ(lm(log(sales) ~ log(rd), data = rdchem))
 
 ### C6
 
-```{r}
+```{r 2.C6}
 data("meap93")
 
 #1
@@ -258,7 +262,7 @@ summ(lm(log(math10) ~ log(expend), data = meap93))
 
 ### C7
 
-```{r}
+```{r 2.C7}
 data("charity")
 
 #1
@@ -275,7 +279,7 @@ summ(lm(gift ~ mailsyear, data = charity))
 
 ### C8
 
-```{r}
+```{r 2.C8}
 #1
 X <- runif(10000, 0, 10)
 mean(X)
@@ -299,12 +303,283 @@ round(sum(u), 3)
 round(sum(X * u), 3)
 ```
 
+# Chapter 3: Multiple Regression Analysis: Estimation
+## Examples
+### 3.1
 
+```{r 3.E3.1}
+data("gpa1")
 
+summ(lm(colGPA ~ hsGPA + ACT, data = gpa1))
+```
 
+### 3.2
 
+```{r 3.E3.2}
+summ(lm(log(wage) ~ educ + exper + tenure, data = wage1))
+```
 
+### 3.3
 
+```{r 3.E3.3}
+summ(lm(prate ~ mrate + age, data = k401k))
+summ(lm(prate ~ mrate, data = k401k))
 
+cor(k401k$mrate, k401k$age)
+```
 
+### 3.5
 
+```{r 3.E3.5}
+data("crime1")
+
+summ(lm(narr86 ~ pcnv + avgsen + ptime86 + qemp86, data = crime1))
+```
+
+## Exercises
+### C1
+
+```{r 3.C1}
+#1
+# Negative for beta2 (cigs)
+
+#2
+# Negatively correlated
+cor(bwght$cigs, bwght$faminc)
+
+#3
+summ(lm(bwght ~ cigs, data = bwght))
+summ(lm(bwght ~ cigs + faminc, data = bwght))
+```
+
+### C2
+
+```{r 3.C2}
+data("hprice1")
+
+#1
+summ(lm(price ~ sqrft + bdrms, data = hprice1))
+# price = -19.315 + 0.128 * sqrft + 15.198 * bdrms + u
+
+#2
+# 15.198 * 1000
+
+#3
+# (140 * 0.128 + 1 * 15.198) * 1000 = 33118
+
+#4
+# R^2 = 0.632
+
+#5
+# -19.315 + 0.128 * 2438 + 15.198 * 4 = 353.541
+
+#6
+# 353.541 - 300 = 53.541
+```
+
+### C3
+
+```{r 3.C3}
+data("ceosal2")
+
+#1
+summ(lm(log(salary) ~ log(sales) + log(mktval), data = ceosal2))
+# log(salary ) = 4.621 + 0.162 * log(sales) + 0.107 * log(mktval) + u
+
+#2
+summ(lm(log(salary) ~ log(sales) + log(mktval) + profits, data = ceosal2))
+
+#3
+summ(lm(log(salary) ~ log(sales) + log(mktval) + profits + ceoten, 
+        data = ceosal2))
+# 1.2%
+
+#4
+cor(ceosal2$lmktval, ceosal2$profits)
+# High correlation leads to positive biases.
+```
+
+### C4
+
+```{r 3.C4}
+data("attend")
+
+#1
+summary(attend$atndrte)
+summary(attend$priGPA)
+summary(attend$ACT)
+
+#2
+summ(lm(atndrte ~ priGPA + ACT, data = attend))
+# atndrte = 75.700 + 17.261 * priGPA - 1.717 * ACT + u
+
+#3
+# estimate of ACT is surprising.
+
+#4
+75.700 + 17.261 * 3.65 - 1.717 * 20
+# Unrealistic since it exceeds the maximum 100.
+
+#5
+17.261 * 3.1 - 1.717 * 21 - (17.261 * 2.1 - 1.717 * 26)
+```
+
+### C5
+
+```{r 3.C5}
+# Regress educ on exper and tenure
+summ(lm(educ ~ exper + tenure, data = wage1))
+
+# Save the residuals
+r <- lm(educ ~ exper + tenure, data = wage1)$residuals
+
+# Regress log(wage) on r
+summ(lm(log(wage) ~ r, data = wage1))
+summ(lm(log(wage) ~ educ + exper + tenure, data = wage1))
+# Equal
+```
+
+### C6
+
+```{r 3.C6}
+#1
+summ(lm(IQ ~ educ, data = wage2))
+theta <- 3.534
+
+#2
+summ(lm(log(wage) ~ educ, data = wage2))
+beta <-  0.060
+
+#3
+summ(lm(log(wage) ~ educ + IQ, data = wage2))
+beta1 <- 0.039
+beta2 <- 0.006
+
+#4
+round(beta1 + beta2 *theta, 3) == beta
+```
+
+### C7
+
+```{r 3.C7}
+#1
+summ(lm(math10 ~ log(expend) + lnchprg, data = meap93))
+
+#3
+summ(lm(math10 ~ log(expend), data = meap93))
+
+#4
+cor(meap93$lexpend, meap93$lnchprg)
+
+```
+
+### C8
+
+```{r 3.C8}
+data("discrim")
+
+#1
+mean(discrim$prpblck, na.rm = TRUE)
+sd(discrim$prpblck, na.rm = TRUE)
+mean(discrim$income, na.rm = TRUE)
+sd(discrim$income, na.rm = TRUE)
+# Percentage
+# Dollar
+
+#2
+summ(lm(psoda ~ prpblck + income, data = discrim))
+# Sample size: 401
+# R-squared: 0.064
+# Estimate for prpblck: 0.115
+
+#3
+summ(lm(psoda ~ prpblck, data = discrim))
+# Estimate for prpblck: 0.065
+# Smaller
+
+#4
+summ(lm(log(psoda) ~ prpblck + log(income), data = discrim))
+0.122 * 20
+
+#5
+summ(lm(log(psoda) ~ prpblck + log(income) + prppov, data = discrim))
+
+#6
+cor((discrim %>% drop_na(lincome, prppov))$lincome, 
+    (discrim %>% drop_na(lincome, prppov))$prppov)
+```
+
+### C9
+
+```{r 3.C9}
+#1
+summ(lm(gift ~ mailsyear + giftlast + propresp, data = charity))
+# R-squared: 0.083
+summ(lm(gift ~ mailsyear, data = charity))
+# R-squared: 0.014
+
+#2
+# Smaller
+
+#4
+summ(lm(gift ~ mailsyear + giftlast + propresp + avggift, data = charity))
+# Smaller
+```
+
+### C10
+
+```{r 3.C10}
+data("htv")
+
+#1
+range(htv$educ)
+nrow(filter(htv, educ == 12)) / nrow(htv) * 100
+mean(htv$educ)
+mean(htv$fatheduc)
+mean(htv$motheduc)
+
+#2
+summ(lm(educ ~ motheduc + fatheduc, data = htv))
+# R-squared: 0.249
+
+#3
+summ(lm(educ ~ motheduc + fatheduc + abil, data = htv))
+
+#4
+htv$abil2 <- htv$abil^2
+summ(lm(educ ~ motheduc + fatheduc + abil + abil2, data = htv))
+
+#5
+#Make new dataframe
+motheduc <- mean(htv$motheduc)
+motheduc_original <- htv$motheduc
+fatheduc_original <- htv$fatheduc
+fatheduc <- mean(htv$fatheduc)
+abil <- htv$abil
+abil2 <- htv$abil2
+
+htv_predict <- data.frame(motheduc, fatheduc, motheduc_original, fatheduc_original, abil, abil2)
+
+#Make prediction
+htv_predict$predicted <- predict(lm(educ ~ motheduc + fatheduc + abil + abil2, data = htv),
+                                 new = htv_predict)
+
+#Make a point/line graph of fitted values
+ggplot(htv_predict, aes(abil, predicted)) + 
+  geom_point() + 
+  geom_line()
+
+#Make a 3d scatterplot of fitted values
+scatterplot3d(htv_predict$abil, 
+              (htv_predict$fatheduc_original + htv_predict$motheduc_original) / 2, 
+              htv_predict$predicted, 
+              angle = 60, color = "dodgerblue", pch = 1, 
+              ylab = "abil", 
+              xlab = "parents' education", 
+              zlab = "education years")
+```
+
+# Chapter 4: Multiple Regression Analysis: Inference
+## Examples
+
+## Exercises
