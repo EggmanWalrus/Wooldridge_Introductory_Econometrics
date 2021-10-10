@@ -5,6 +5,8 @@ date: "9/29/2021"
 output: 
   html_document:
     toc: true 
+    toc_float: true
+    toc_collapsed: true
     number_sections: true
     theme: united
     highlight: tango
@@ -15,13 +17,12 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Import Libraries
-
 ```{r library and settings, message=FALSE, warning=FALSE}
 library(wooldridge)
 library(tidyverse)
 library(scatterplot3d)
 library(jtools)
+library(car)
 
 #Set ggplot graph theme
 theme_set(theme_classic())
@@ -144,7 +145,7 @@ mean(fertil2$children[fertil2$electric == 0], na.rm = TRUE)
 ## Exampeles
 ### 2.3
 
-```{r 2.E2.3, message=FALSE, warning=FALSE}
+```{r}
 data("ceosal1")
 
 summ(lm(salary ~ roe, data = ceosal1))
@@ -152,11 +153,12 @@ summ(lm(salary ~ roe, data = ceosal1))
 ggplot(ceosal1, aes(roe, salary)) + 
   geom_point() + 
   geom_smooth(method = "lm")
-````
+```
+
 
 ### 2.4
 
-```{r 2.E2.4, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE}
 summ(lm(log(wage) ~ educ, data = wage1))
 
 ggplot(wage1, aes(educ, log(wage))) + 
@@ -581,5 +583,193 @@ scatterplot3d(htv_predict$abil,
 
 # Chapter 4: Multiple Regression Analysis: Inference
 ## Examples
+### 4.1
+
+```{r 4.E4.1}
+summ(lm(log(wage) ~ educ + exper + tenure, data = wage1))
+```
+
+### 4.2
+
+```{r 4.E4.2}
+summ(lm(math10 ~ totcomp + staff + enroll, data = meap93))
+```
+
+### 4.4
+
+```{r 4.E4.4}
+summ(lm(log(crime) ~ log(enroll), data = campus))
+```
+
+If H0 = 1, then t = (1.27 - 1)/.11 = `r round((1.27 - 1)/.11, 3)`.  
+The one-sided 5% critical value for a _t_ distribution with 95 _df_ is about `r round(qt(0.95, df = 95), 3)`. Therefore, we clearly reject beta1 = 1 in favor of beta1 > 1 at the 5% level.
+
+### 4.5
+
+```{r}
+#Model 1
+model1 <- lm(log(salary) ~ years + gamesyr + bavg + hrunsyr + rbisyr, data = mlb1)
+summary(model1)
+
+#SSR
+sse1 <- sum((fitted(model1) - mean(log(mlb1$salary)))^2)
+ssr1 <- sum((fitted(model1) - log(mlb1$salary))^2)
+sst1 <- sse1 + ssr1
+
+#Model 2
+model2 <- lm(log(salary) ~ years + gamesyr, data = mlb1)
+summary(model2)
+
+sse2 <- sum((fitted(model2) - mean(log(mlb1$salary)))^2)
+ssr2 <- sum((fitted(model2) - log(mlb1$salary))^2)
+sst2 <- sse2 + ssr2
+
+#F-statistics
+linearHypothesis(model1, c("bavg=0", "hrunsyr=0", "rbisyr=0"))
+```
+
+### 4.9
+
+```{r}
+model <- lm(bwght ~ cigs + parity + faminc + motheduc + fatheduc, data = bwght)
+summary(model)
+
+linearHypothesis(model, c("motheduc=0", "fatheduc=0"))
+```
+
+### 4.10
+
+```{r}
+model <- lm(log(price) ~ log(assess) + log(lotsize) + log(sqrft) + bdrms, data = hprice1)
+summary(model)
+
+linearHypothesis(model, c("log(assess)=1", "log(lotsize)=0", "log(sqrft)=0", "bdrms=0"))
+```
 
 ## Exercises
+### C1
+
+```{r}
+#1
+#While holding log(expendB) and prtystrA controlled, 1% increase of expendA lead to 1*beta1% increase of voteA
+
+#2
+#H0: beta1 + beta2 = 0
+
+#3
+model <- lm(voteA ~ log(expendA) + log(expendB) + prtystrA, data = vote1)
+summary(model)
+
+#4
+model <- lm(voteA ~ log(expendA-expendB) + prtystrA, data = vote1)
+summary(model)
+```
+
+### C3
+
+```{r}
+model <- lm(log(price) ~ sqrft + bdrms, data = hprice1)
+summ(model)
+
+#1
+theta1 <- 150 * 0.000 + 1 * 0.029
+
+#2
+#log(price) = beta0 + beta1 * (x1 - 150 * x2) + theta1 * x2 + u
+
+#3
+hprice1$add <- hprice1$sqrft - 150 * hprice1$bdrms
+summ(lm(log(price) ~ add + bdrms, data = hprice1))
+confint(lm(log(price) ~ add + bdrms, data = hprice1))
+```
+
+### C5
+
+```{r}
+#2
+model <- lm(log(salary) ~ years + gamesyr + bavg + hrunsyr + rbisyr + runsyr + fldperc + sbasesyr, data = mlb1)
+summ(model)
+
+#3
+linearHypothesis(model, c("bavg=0", "fldperc=0", "sbasesyr=0"))
+```
+
+### C6
+
+```{r}
+#1
+model <- lm(log(wage) ~ educ + exper + tenure, data = wage2)
+#H0: beta2 - beta3 = 0
+
+#2
+wage2$add <- wage2$exper + wage2$tenure
+model <- lm(log(wage) ~ educ + add + tenure, data = wage2)
+summ(model)
+confint(model)
+#We fail the reject H0 that they have the same effect
+```
+
+### C8
+
+```{r}
+#1
+k401ksubs %>% filter(fsize == 1) %>% nrow()
+
+#2
+model <- lm(nettfa ~ inc + age, k401ksubs %>% filter(fsize == 1))
+summ(model)
+
+#4
+t <- (0.843 - 1) / 0.092
+pt(t, df = 2014)
+
+#5
+summ(lm(nettfa ~ inc, k401ksubs %>% filter(fsize == 1)))
+```
+
+### C9
+
+```{r}
+model <- lm(log(psoda) ~ prpblck + log(income) + prppov, discrim)
+summ(model)
+
+#1
+# Beta1is statistically significantly different from zero at the 5% level, but not at the 1% level.
+
+#3
+model <- lm(log(psoda) ~ prpblck + log(income) + prppov + log(hseval), discrim)
+summ(model)
+
+#4
+linearHypothesis(model, c("log(income)=0", "prppov=0"))
+# Yes, jointly significant
+```
+
+### C11
+
+```{r}
+#1
+model <- lm(educ ~ motheduc + fatheduc + abil + abil2, htv)
+summ(model)
+
+linearHypothesis(model, c("abil2=0"))
+
+#3
+model <- lm(educ ~ motheduc + fatheduc + abil + abil2 + tuit17 + tuit18, htv)
+summ(model)
+
+linearHypothesis(model, c("tuit17=0", "tuit18=0"))
+
+#4
+cor(htv$tuit17, htv$tuit18)
+model <- lm(educ ~ motheduc + fatheduc + abil + abil2 + I((tuit17 + tuit18) / 2), htv)
+summ(model)
+```
+
+# Chapter 5: Multiple Regression Analysis: OLS Asymptotics
+## Examples
+
+## Excercises
+
+
+
