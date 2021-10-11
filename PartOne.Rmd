@@ -22,6 +22,7 @@ library(wooldridge)
 library(tidyverse)
 library(scatterplot3d)
 library(jtools)
+library(moments)
 library(car)
 
 #Set ggplot graph theme
@@ -768,8 +769,93 @@ summ(model)
 
 # Chapter 5: Multiple Regression Analysis: OLS Asymptotics
 ## Examples
+### 5.3
+
+Lagrange Multiplier (_LM_) Test
+
+```{r}
+#1 Unrestricted and restricted model
+model_ur <- lm(narr86 ~ pcnv + avgsen + tottime + ptime86 + qemp86, data = crime1)
+model_r <- lm(narr86 ~ pcnv + ptime86 + qemp86, data = crime1)
+#Save the residuals of the restricted model
+model_r_residuals <- model_r$residuals
+
+#2 Regress residuals on all independent variables
+model_lm <- lm(model_r_residuals ~ pcnv + avgsen + tottime + ptime86 + qemp86, data = crime1)
+r_squared <- summary(model_lm)$r.squared
+lm_r <- r_squared * nobs(model_r)
+
+#3
+#Critical value of chi-squared distribution
+qchisq(.95, df=2)
+(p_value <- 1 - pchisq(lm_r, df = 2))
+```
 
 ## Excercises
+### C1
 
+```{r}
+#1
+model <- lm(wage ~ educ + exper + tenure, data = wage1)
 
+#2
+model_log <- lm(log(wage) ~ educ + exper + tenure, data = wage1)
 
+#3
+hist(wage1$lwage)
+#Log-level satifies Assumption MLR.6 more.
+```
+
+### C2
+
+```{r}
+#1
+model <- lm(colgpa ~ hsperc + sat, data = gpa2)
+summary(model)
+
+#2
+model2 <- lm(colgpa ~ hsperc + sat, data = gpa2[1:2070, ])
+summary(model2)
+
+#3
+5.495e-04 / 7.185e-04
+```
+
+### C3
+
+```{r}
+#1
+model_r <- lm(bwght ~ cigs + parity + faminc, data = bwght)
+model_r_residuals <- model_r$residuals
+
+model_lm <- lm(model_r_residuals ~ cigs + parity + faminc + motheduc + fatheduc, data = bwght)
+r_squared <- summary(model_lm)$r.squared
+lm_r <- r_squared * nobs(model_r)
+
+(p_value <- 1 - pchisq(lm_r, df = model_r$df.residual))
+```
+
+### C4
+
+```{r}
+#1
+skewness(filter(k401ksubs, fsize==1)$inc)
+skewness(log(filter(k401ksubs, fsize==1)$inc))
+
+#2
+skewness(bwght2$bwght)
+skewness(bwght2$lbwght)
+```
+
+### C5
+
+```{r}
+ggplot(htv, aes(x = educ)) + 
+  geom_histogram(aes(y = ..density..)) + 
+  stat_function(fun = dnorm, args = list(mean = mean(htv$educ), sd = sd(htv$educ)))
+```
+
+# Chapter 6: Multiple Regression Analysis: Further Issues
+## Examples
+
+## Exercises
