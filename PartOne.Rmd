@@ -24,11 +24,13 @@ library(scatterplot3d)
 library(jtools)
 library(moments)
 library(car)
+library(lm.beta)
+library(QuantPsyc)
 
 #Set ggplot graph theme
 theme_set(theme_classic())
 #Set digits number of regression outputs
-set_summ_defaults(digits = 3)
+set_summ_defaults(digits = 4)
 ```
 
 
@@ -857,5 +859,345 @@ ggplot(htv, aes(x = educ)) +
 
 # Chapter 6: Multiple Regression Analysis: Further Issues
 ## Examples
+### 6.1
+
+```{r}
+model <- lm(scale(price) ~ scale(nox) + scale(crime) + scale(rooms) + scale(dist) + scale(stratio), data = hprice2)
+summ(model)
+```
+
+### 6.2
+
+```{r}
+model <- lm(log(price) ~ log(nox) + log(dist) + rooms + I(rooms^2) + stratio, data = hprice2)
+summ(model)
+0.545 / (2 * 0.062)
+#turning point = 0.545 / (2 * 0.062)
+```
+
+### 6.3
+
+```{r}
+model <- lm(stndfnl ~ atndrte + priGPA + ACT + I(priGPA^2) + I(ACT^2) + priGPA * atndrte, 
+            data = attend)
+summ(model)
+linearHypothesis(model, c("atndrte=0", "atndrte:priGPA=0"))
+
+model <- lm(stndfnl ~ atndrte + priGPA + ACT + I(priGPA^2) + I(ACT^2) + I((priGPA - 2.59) * atndrte), 
+            data = attend)
+summ(model)
+
+model <- lm(stndfnl ~ atndrte + priGPA + ACT + I((priGPA - 2.59)^2) + I(ACT^2) + I(priGPA * (atndrte-82)), 
+            data = attend)
+summ(model)
+```
+
+### 6.5
+
+```{r}
+model <- lm(colgpa ~ sat + hsperc + hsize + I(hsize^2), data = gpa2)
+# sat = 1200, hsperc = 30, hsize = 5
+model <- lm(colgpa ~ I(sat-1200) + I(hsperc-30) + I(hsize-5), data = gpa2) 
+summary(model)
+confint(model)
+```
+
+### 6.7
+
+```{r}
+#1 Obtain fitted values and residuals
+model <- lm(log(salary) ~ log(sales) + log(mktval) + ceoten, ceosal2)
+summary(model)
+
+#2 Obtain alpha from equation 6.43
+alpha <- 1 / nobs(model) * sum(exp(model$residuals))
+
+#3 Obtain log(y) from given values of x1-k
+y <- exp(4.504 + 0.163 * log(5000) + 0.109 * log(10000) + 0.0117 * 10)
+
+#4 Obtain the predicted y
+alpha * y
+```
 
 ## Exercises
+### C1
+
+```{r}
+#1
+model <- lm(log(price) ~ log(dist), data = kielmc)
+summ(model)
+
+#2
+model <- lm(log(price) ~ log(dist) + log(intst) + log(area) + log(land) + rooms + baths + age, 
+            data = kielmc)
+summ(model)
+
+#3
+model <- lm(log(price) ~ log(dist) + log(intst) + log(area) + log(land) + rooms + baths + age + I(log(intst)^2), 
+            data = kielmc)
+summ(model)
+```
+
+### C2
+
+```{r}
+#1
+model <- lm(log(wage) ~ educ + exper + I(exper^2),
+            data = wage1)
+summ(model)
+
+#3
+100 * (0.041 - 2 * 0.0007 * 5) * 1
+100 * (0.041 - 2 * 0.0007 * 20) * 1
+
+#4
+0.041 / (2 * 0.0007)
+nrow(filter(wage1, exper > 29))
+```
+
+### C3
+
+```{r}
+#3
+model <- lm(log(wage) ~ educ + exper + educ * exper, data = wage2)
+summ(model)
+
+#4
+model <- lm(log(wage) ~ educ + exper + I(educ * exper - 10 * educ), data = wage2)
+summ(model)
+confint(model) %>% round(4)
+```
+
+### C4
+
+```{r}
+#1
+model <- lm(sat ~ hsize + I(hsize^2), gpa2)
+summ(model)
+
+#2
+19.8145 / (2 * 2.1306)
+
+#4
+model <- lm(log(sat) ~ hsize + I(hsize^2), gpa2)
+summ(model)
+0.0196 / (2 * 0.0021)
+```
+
+### C5
+
+```{r}
+#1
+model <- lm(log(price) ~ log(lotsize) + log(sqrft) + bdrms, hprice1)
+summ(model)
+
+#2
+-1.2970 + 0.1680 * log(20000) + 0.7002 * log(2500) + 0.00370 * 4
+alpha <- 1 / nobs(model) * sum(exp(model$residuals))
+alpha * exp(-1.2970 + 0.1680 * log(20000) + 0.7002 * log(2500) + 0.00370 * 4)
+
+#3
+model <- lm(price ~ lotsize + sqrft + bdrms, hprice1)
+summ(model)
+```
+
+### C6
+
+```{r}
+#2
+model <- lm(voteA ~ prtystrA + expendA + expendB + expendA * expendB, vote1)
+summ(model)
+
+#3
+mean(vote1$expendA)
+-0.0317 * 100000 - -0.0000 * 300
+
+#4
+0.0383 * 100 - 0.0000 * 100
+
+#5
+#No, it doesn't make sense.
+```
+
+### C7
+
+```{r}
+#1
+model <- lm(stndfnl ~ atndrte + priGPA + ACT + I(priGPA^2) + I(ACT^2) + priGPA * atndrte, 
+            data = attend)
+summ(model)
+-1.6285 + 2 * 0.2959 * 2.59 + 0.0056 * 82
+
+#2
+model <- lm(stndfnl ~ atndrte + priGPA + ACT + I((priGPA - 2.59)^2) + I(ACT^2) + I(priGPA * (atndrte-82)), 
+            data = attend)
+summ(model)
+```
+
+### C8
+
+```{r}
+#1
+model <- lm(price ~ lotsize + sqrft + bdrms, hprice1)
+summary(model)
+new_data <- data.frame("lotsize"= 10000, "sqrft"=2300, bdrms=4)
+predict(model, newdata = new_data) %>% round(0)
+
+#2
+model <- lm(price ~ I(lotsize-10000) + I(sqrft-2300) + I(bdrms-4), hprice1)
+confint(model) %>% round(1)
+```
+
+### C9
+
+```{r}
+#1
+model <- lm(points ~ exper + age + coll + I(exper^2), nbasal)
+summ(model)
+
+#2
+2.3636 / (2 * 0.0770)
+
+#4
+model <- lm(points ~ exper + age + coll + I(exper^2) + I(age^2), nbasal)
+summ(model)
+3.9837 / (2 * 0.0536)
+
+#5
+model <- lm(log(wage) ~ points + exper + I(exper^2) + age + coll, nbasal)
+summ(model)
+
+#6
+linearHypothesis(model, c("age=0", "coll=0"))
+```
+
+### C10
+
+```{r}
+#1
+model <- lm(log(bwght) ~ npvis + I(npvis^2), bwght2)
+summ(model)
+
+#2
+0.0189 / (2 * 0.0004)
+nrow(filter(bwght2, npvis >=22))
+
+#4
+model <- lm(log(bwght) ~ mage + I(mage^2) + npvis + I(npvis^2), bwght2)
+summ(model)
+nrow(filter(bwght2, mage > 0.0254 / (2 * .0004)))
+
+#5
+#no
+
+#6
+model <- lm(bwght ~ mage + I(mage^2) + npvis + I(npvis^2), bwght2)
+summ(model)
+```
+
+### C11
+
+```{r}
+#1
+model <- lm(ecolbs ~ ecoprc + regprc, apple)
+summ(model)
+
+#3
+range(fitted.values(model))
+nrow(filter(apple, ecolbs == 0)) / nrow(apple)
+
+#4
+#no
+
+#5
+model <- lm(ecolbs ~ ecoprc + regprc + faminc + hhsize + educ + age, apple)
+linearHypothesis(model, c("faminc=0", "hhsize=0", "educ=0", "age=0"))
+
+#6
+model <- lm(ecolbs ~ ecoprc, apple)
+summ(model)
+model <- lm(ecolbs ~ regprc, apple)
+summ(model)
+cor(apple$ecoprc, apple$regprc)
+```
+
+### C12
+
+```{r}
+#1
+filter(k401ksubs, fsize == 1)$age %>% range()
+nrow(filter(k401ksubs, fsize == 1) %>% filter(age == 25))
+
+#2
+model <- lm(nettfa ~ inc + age + I(age^2), filter(k401ksubs, fsize == 1))
+summ(model)
+1.3218 / (2 * 0.0256)
+
+#4
+model <- lm(nettfa ~ inc + age + I((age-25)^2), filter(k401ksubs, fsize == 1))
+summ(model)
+
+#5
+model <- lm(nettfa ~ inc + I(age^2), filter(k401ksubs, fsize == 1))
+summ(model)
+
+#6
+new_data <- data.frame('inc' = 30,
+                       age = seq(25, 74, 1))
+new_data$nettfa_fitted <- predict(model, newdata = new_data)
+ggplot(new_data, aes(age, nettfa_fitted)) + 
+  geom_point() +
+  geom_line()
+```
+
+### C13
+
+```{r}
+#1
+model <- lm(math4 ~ lexppp + lenroll + lunch, meap00_01)
+summ(model)
+
+#2
+range(fitted.values(model))
+range(meap00_01$math4)
+
+#3
+max(model$residuals)
+
+#4
+model <- lm(math4 ~ lexppp + lenroll + lunch + I(lexppp^2) + I(lenroll^2) + I(lunch^2), meap00_01)
+summ(model)
+
+#5
+model <- lm(scale(math4) ~ scale(lexppp) + scale(lenroll) + scale(lunch), meap00_01)
+summ(model)
+```
+
+### C14
+
+```{r}
+#1
+model <- lm(lavgsal ~ bs, benefits)
+summ(model)
+1 - pt((-0.5035 + 1) / 0.1662, df = 1846)
+
+#2
+benefits$lbs <- log(benefits$bs)
+range(benefits$bs)
+range(benefits$lbs)
+sd(benefits$bs)
+sd(benefits$lbs)
+
+#3
+model <- lm(lavgsal ~ lbs, benefits)
+summ(model)
+
+#4
+model <- lm(lavgsal ~ bs + lenroll + lstaff + lunch, benefits)
+summ(model)
+
+#5
+model <- lm(lavgsal ~ bs + lenroll + lstaff + lunch + I(lunch^2), benefits)
+summ(model)
+```
+
